@@ -1,0 +1,29 @@
+version: "3.9"
+   
+services:
+
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "8000:8000"
+    entrypoint: ./entrypoint.sh
+ #   command: gunicorn server.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static:/static
+
+  nginx:
+    build: 
+      context: .
+      dockerfile: ./webserver/Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - static:/static
+    depends_on:
+      - backend
+
+      
+volumes:
+  static:
