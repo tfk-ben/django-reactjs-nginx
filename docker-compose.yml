@@ -8,9 +8,9 @@ services:
     ports:
       - "8000:8000"
     entrypoint: ./entrypoint.sh
- #   command: gunicorn server.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static:/static
+
 
   nginx:
     build: 
@@ -19,11 +19,24 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - static:/static
+      - static:/usr/share/nginx/html/static
+      - ./dhparam:/etc/nginx/dhparam
+      - ./certbot/conf/:/etc/nginx/ssl/
+      - ./certbot/data:/usr/share/nginx/html/frontend1
+      - ./certbot/data:/usr/share/nginx/html/frontend2
     depends_on:
       - backend
 
-      
+  certbot:
+     image: certbot/certbot:v1.32.2
+     command: certonly --webroot --webroot-path=/usr/share/nginx/html/frontend1 --email rio@dimasrio.com --agree-tos --no-eff-email -d myapp.loc && certonly --webroot --webroot-path=/usr/share/nginx/html/frontend2 --email rio@dimasrio.com --agree-tos --no-eff-email -d newapp.loc
+     volumes:
+       - ./certbot/conf/:/etc/letsencrypt
+       - ./certbot/logs/:/var/log/letsencrypt
+       - ./certbot/data:/usr/share/nginx/html/frontend1
+       - ./certbot/data:/usr/share/nginx/html/frontend2
 volumes:
   static:
+
